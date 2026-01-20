@@ -39,6 +39,42 @@
             background-color: #f8f9fa;
         }
 
+        /* 访问受限样式 */
+        .access-restricted {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #ffffff;
+            z-index: 9999;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .access-restricted h1 {
+            color: #003893;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .access-restricted p {
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin-bottom: 2rem;
+            color: #666;
+        }
+
+        .restricted-logo {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 2rem;
+        }
+
         /* Encabezado */
         header {
             background: linear-gradient(135deg, #003893, #75a7ff);
@@ -191,10 +227,28 @@
             section {
                 padding: 2rem 0;
             }
+
+            .access-restricted h1 {
+                font-size: 1.8rem;
+            }
+
+            .access-restricted p {
+                font-size: 1rem;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- 访问受限提示页面 -->
+    <div id="accessRestricted" class="access-restricted">
+        <svg class="restricted-logo" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z" fill="#003893"/>
+        </svg>
+        <h1>Acceso Restringido</h1>
+        <p>Este sitio web solo está disponible para visitantes desde Australia. Lamentamos no poder atenderte en esta región.</p>
+        <p>This website is only available to visitors from Australia. We apologize for not being able to assist you in this region.</p>
+    </div>
+
     <!-- Encabezado -->
     <header>
         <div class="container">
@@ -298,8 +352,43 @@
         </div>
     </footer>
 
-    <!-- JavaScript básico para interacción + Pixel事件追踪 -->
+    <!-- JavaScript básico para interacción + Pixel事件追踪 + IP地域限制 -->
     <script>
+        // ========== IP地域限制核心代码 ==========
+        (async function() {
+            try {
+                // 获取IP地理位置信息
+                const response = await fetch('https://ipapi.co/json/');
+                const data = await response.json();
+                
+                // 检查是否为澳大利亚IP (国家代码 AU)
+                if (data.country_code !== 'AU') {
+                    // 隐藏主内容，显示访问受限提示
+                    document.body.style.overflow = 'hidden';
+                    document.getElementById('accessRestricted').style.display = 'flex';
+                    
+                    // 可选：记录被拦截的访问（可用于分析）
+                    fbq('track', 'ViewContent', {
+                        content_name: 'Access Restricted',
+                        content_type: 'geo_restriction',
+                        country: data.country_name || 'Unknown',
+                        country_code: data.country_code || 'Unknown'
+                    });
+                } else {
+                    // 澳大利亚IP，正常显示页面
+                    document.getElementById('accessRestricted').style.display = 'none';
+                }
+            } catch (error) {
+                // API调用失败时的备用方案：允许访问或拒绝访问
+                // 如果你想在API失败时拒绝所有访问，取消下面的注释
+                // document.body.style.overflow = 'hidden';
+                // document.getElementById('accessRestricted').style.display = 'flex';
+                
+                console.error('IP地理位置检测失败:', error);
+            }
+        })();
+
+        // ========== 原有页面交互代码 ==========
         // Smooth scroll para enlaces de navegación
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
@@ -336,7 +425,7 @@
         });
 
         // Facebook Pixel 自定义事件追踪 - 联系按钮点击
-        document.getElementById('contactButton').addEventListener('click', function() {
+        document.getElementById('contactButton')?.addEventListener('click', function() {
             // 追踪WhatsApp联系按钮点击事件（Meta标准事件：Contact）
             fbq('track', 'Contact', {
                 content_name: 'Contacto WhatsApp MVA',
