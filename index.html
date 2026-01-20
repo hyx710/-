@@ -284,8 +284,8 @@
         <section class="cta-section">
             <div class="container">
                 <h2>Únete a la revolución financiera argentina</h2>
-                <!-- 替换后的WhatsApp按钮 -->
-                <a href="https://wa.me/5491112345678" class="cta-button" target="_blank">Si estás interesado, contacta mi WhatsApp</a>
+                <!-- 带追踪事件的WhatsApp按钮 -->
+                <a href="https://wa.me/5491112345678" id="contactButton" class="cta-button" target="_blank">Si estás interesado, contacta mi WhatsApp</a>
             </div>
         </section>
     </main>
@@ -298,7 +298,7 @@
         </div>
     </footer>
 
-    <!-- JavaScript básico para interacción -->
+    <!-- JavaScript básico para interacción + Pixel事件追踪 -->
     <script>
         // Smooth scroll para enlaces de navegación
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -334,6 +334,17 @@
         window.addEventListener('load', function() {
             window.dispatchEvent(new Event('scroll'));
         });
+
+        // Facebook Pixel 自定义事件追踪 - 联系按钮点击
+        document.getElementById('contactButton').addEventListener('click', function() {
+            // 追踪WhatsApp联系按钮点击事件（Meta标准事件：Contact）
+            fbq('track', 'Contact', {
+                content_name: 'Contacto WhatsApp MVA',
+                content_type: 'button_click',
+                currency: 'ARS',
+                value: 0
+            });
+        }, false);
     </script>
 </body>
 </html>
